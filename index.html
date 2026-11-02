@@ -1,555 +1,107 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#1c5cab">
-<link rel="manifest" href="manifest.json">
-<title>AETN · Control de Riesgo – Registro</title>
-<style>
-:root{
-  --s1:#fcfcfb;--s2:#f4f3f0;--s3:#e8e7e2;
-  --tp:#0b0b0b;--ts:#52514e;--tm:#898781;
-  --gl:#e1e0d9;--bl:#c3c2b7;
-  --good:#0ca30c;--warn:#c98500;--ser:#b85a2a;--crit:#d03b3b;--neu:#c3c2b7;
-  --gf:#e8f7e8;--wf:#fff3cc;--sf:#fdeee6;--cf:#fce8e8;--nf:#f0efec;
-  --ac:#1c5cab;--acl:#deedfb;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--s2);color:var(--tp);min-height:100vh}
-.app-header{background:var(--ac);color:#fff;padding:14px 18px 12px;display:flex;align-items:flex-end;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.22)}
-.at{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin-bottom:2px}
-.as{font-size:16px;font-weight:800;line-height:1.2}
-.am{font-size:10px;opacity:.65;margin-top:3px}
-.hbadge{background:rgba(255,255,255,.18);border-radius:8px;padding:6px 12px;text-align:center;line-height:1.3}
-.hbadge .n{font-size:22px;font-weight:900;display:block}
-.hbadge .s{font-size:10px;opacity:.8}
-.nav-tabs{display:flex;background:var(--s1);border-bottom:1.5px solid var(--gl);overflow-x:auto;scrollbar-width:none}
-.nav-tabs::-webkit-scrollbar{display:none}
-.nav-tab{flex:none;padding:11px 16px;font-size:13px;font-weight:600;color:var(--tm);border:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;background:none;transition:color .15s,border-color .15s}
-.nav-tab.active{color:var(--ac);border-bottom-color:var(--ac)}
-.nav-tab:hover:not(.active){color:var(--ts)}
-.view{display:none;padding:14px 13px 50px}
-.view.active{display:block}
-.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-@media(max-width:560px){.stat-row{grid-template-columns:repeat(2,1fr)}}
-.stile{background:var(--s1);border-radius:10px;padding:12px 12px 10px;border:1.5px solid var(--gl)}
-.stl{font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
-.stv{font-size:28px;font-weight:900;line-height:1}
-.sts{font-size:11px;color:var(--ts);margin-top:3px}
-.cc{color:var(--crit)}.cs{color:var(--ser)}.cw{color:var(--warn)}.cg{color:var(--good)}
-.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.fbtn{font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;border:1.5px solid var(--gl);background:var(--s1);color:var(--ts);cursor:pointer;transition:all .15s}
-.fbtn.active{background:var(--ac);color:#fff;border-color:var(--ac)}
-.sectitle{font-size:11px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
-.semwrap{background:var(--s1);border-radius:12px;border:1.5px solid var(--gl);overflow:hidden;margin-bottom:18px}
-.semscroll{overflow-x:auto}
-.semtable{width:100%;border-collapse:collapse;font-size:11.5px}
-.semtable thead th{background:var(--s2);color:var(--ts);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:8px 6px;border-bottom:1.5px solid var(--gl);white-space:nowrap;text-align:center}
-.semtable thead th:first-child{text-align:left;position:sticky;left:0;background:var(--s2);z-index:2;min-width:152px;padding-left:12px}
-.semtable tbody tr{border-bottom:1px solid var(--gl);cursor:pointer;transition:background .1s}
-.semtable tbody tr:last-child{border-bottom:none}
-.semtable tbody tr:hover{background:var(--acl)}
-.semtable tbody td{padding:7px 6px;text-align:center;vertical-align:middle}
-.semtable tbody td:first-child{text-align:left;position:sticky;left:0;background:var(--s1);z-index:1;border-right:1.5px solid var(--gl);padding-left:12px}
-.semtable tbody tr:hover td:first-child{background:var(--acl)}
-.opn{font-size:12px;font-weight:700;line-height:1.2}
-.opi{font-size:9px;color:var(--tm);margin-top:1px}
-.chip{display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:22px;padding:0 5px;border-radius:5px;font-size:10px;font-weight:700}
-.chip-c{background:var(--cf);color:var(--crit)}
-.chip-s{background:var(--sf);color:var(--ser)}
-.chip-w{background:var(--wf);color:var(--warn)}
-.chip-g{background:var(--gf);color:var(--good)}
-.chip-n{background:var(--nf);color:var(--tm)}
-.gb{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
-.gb-c{background:var(--cf);color:var(--crit)}
-.gb-s{background:var(--sf);color:var(--ser)}
-.gb-w{background:var(--wf);color:var(--warn)}
-.gb-g{background:var(--gf);color:var(--good)}
-.rkn{font-size:13px;font-weight:800;color:var(--ts)}
-.legrow{display:flex;gap:12px;flex-wrap:wrap;padding:8px 12px;border-top:1px solid var(--gl)}
-.legi{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--ts)}
-.legd{width:10px;height:10px;border-radius:3px}
-.legnote{font-size:10px;color:var(--tm);padding:0 12px 8px;line-height:1.5}
-.rintro{background:var(--s1);border-radius:10px;border:1.5px solid var(--gl);padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--ts);line-height:1.6}
-.rbwrap{background:var(--s1);border-radius:12px;border:1.5px solid var(--gl);overflow:hidden}
-.rbrow{display:grid;grid-template-columns:28px 1fr 54px;gap:8px;align-items:center;padding:7px 14px;border-bottom:1px solid var(--gl);cursor:pointer;transition:background .1s}
-.rbrow:last-child{border-bottom:none}
-.rbrow:hover{background:var(--acl)}
-.rkp{font-size:12px;font-weight:800;color:var(--tm);text-align:center}
-.rkp.top3{color:var(--ac)}
-.rkc{min-width:0}
-.rknm{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rkbt{height:7px;background:var(--s3);border-radius:4px;overflow:hidden;margin-top:4px}
-.rkbf{height:100%;border-radius:4px}
-.rksc{font-size:12px;font-weight:700;color:var(--ts);text-align:right}
-.csel{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid var(--gl);background:var(--s1);font-size:14px;color:var(--tp);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23898781' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;margin-bottom:12px}
-.ccwrap{background:var(--s1);border-radius:12px;border:1.5px solid var(--gl);padding:14px}
-.cbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;border-radius:5px;padding:2px 0;transition:background .1s}
-.cbar:hover{background:var(--acl)}
-.cbl{font-size:10.5px;font-weight:600;width:110px;flex-shrink:0;text-align:right;color:var(--ts);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cbt{flex:1;height:15px;background:var(--s3);border-radius:4px;overflow:hidden}
-.cbf{height:100%;border-radius:4px}
-.cbv{font-size:10px;font-weight:700;width:46px;flex-shrink:0;color:var(--ts)}
-.cax{display:flex;justify-content:space-between;padding:4px 0 0 118px}
-.cax span{font-size:9px;color:var(--tm)}
-.cnote{font-size:11px;color:var(--tm);margin-top:10px;line-height:1.5}
-.backbtn{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:var(--ac);background:none;border:none;cursor:pointer;margin-bottom:14px;padding:0}
-.fcard{background:var(--s1);border-radius:12px;border:1.5px solid var(--gl);margin-bottom:12px;overflow:hidden}
-.fhead{background:var(--ac);color:#fff;padding:16px 16px 14px}
-.fonm{font-size:17px;font-weight:800;margin-bottom:3px;line-height:1.2}
-.fomt{font-size:11px;opacity:.75}
-.fbadges{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
-.fbdg{background:rgba(255,255,255,.18);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600}
-.chead{padding:10px 14px;background:var(--s2);border-bottom:1.5px solid var(--gl);display:flex;align-items:center;justify-content:space-between}
-.ctitle{font-size:11px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.05em}
-.cbody{padding:14px}
-.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:500px){.dgrid{grid-template-columns:1fr}}
-.dl{font-size:9.5px;color:var(--tm);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
-.dv{font-size:13px;font-weight:600}
-.ctbl{width:100%;border-collapse:collapse;font-size:11px}
-.ctbl th{font-size:9.5px;color:var(--tm);font-weight:700;text-transform:uppercase;padding:5px 6px;text-align:center;border-bottom:1.5px solid var(--gl)}
-.ctbl th:first-child{text-align:left}
-.ctbl td{padding:5px 6px;border-top:1px solid var(--gl);text-align:center;font-size:11px}
-.ctbl td:first-child{text-align:left;color:var(--ts)}
-.cc2{color:var(--good);font-weight:800;font-size:14px}
-.cx2{color:var(--crit);font-weight:800;font-size:14px}
-.cnc{color:var(--tm);font-size:11px}
-.ihdr{display:grid;grid-template-columns:1fr 64px 64px 14px;gap:6px;padding:0 0 7px;border-bottom:1.5px solid var(--gl);margin-bottom:2px}
-.ihdr span{font-size:9.5px;font-weight:700;color:var(--tm);text-transform:uppercase;text-align:right}
-.ihdr span:first-child{text-align:left}
-.irow{display:grid;grid-template-columns:1fr 64px 64px 14px;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--gl)}
-.irow:last-child{border-bottom:none}
-.inm{font-size:12px;font-weight:600}
-.ivl{font-size:12px;font-weight:700;text-align:right}
-.idot{width:10px;height:10px;border-radius:50%;justify-self:center}
-.dot-c{background:var(--crit)}.dot-s{background:var(--ser)}.dot-w{background:var(--warn)}.dot-g{background:var(--good)}.dot-n{background:var(--neu)}
-.rfgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-@media(max-width:480px){.rfgrid{grid-template-columns:repeat(2,1fr);gap:8px}}
-.rfi{text-align:center;padding:8px 4px;background:var(--s2);border-radius:8px}
-.rfl{font-size:9px;color:var(--tm);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
-.rfp{font-size:20px;font-weight:900;line-height:1}
-.rfs{font-size:9px;color:var(--tm)}
-.rp-g{color:var(--good)}.rp-w{color:var(--warn)}.rp-b{color:var(--crit)}
-.alti{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--gl)}
-.alti:last-child{border-bottom:none}
-.altd{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
-.altt{font-size:12px;line-height:1.5;color:var(--ts)}
-.altm{font-size:10px;color:var(--tm);margin-top:2px}
-.nosanc{font-size:12px;color:var(--good);font-weight:600}
-.nota-dato{font-size:10.5px;color:var(--tm);margin-top:10px;line-height:1.6;font-style:italic}
-</style>
-</head>
-<body>
-<header class="app-header">
-  <div>
-    <div class="at">AETN · DDO · Dirección de Derechos y Obligaciones</div>
-    <div class="as">Control de Riesgo — Operadores con Registro</div>
-    <div class="am">Gestión 2025 · Resolución AETN N° 298/2022 · Datos al corte oct 2026</div>
-  </div>
-  <div class="hbadge"><span class="n">25</span><span class="s">operadores</span></div>
-</header>
-<nav class="nav-tabs">
-  <button class="nav-tab active" data-view="panel">Panel de Riesgo</button>
-  <button class="nav-tab" data-view="ranking">Ranking Global</button>
-  <button class="nav-tab" data-view="comp">Comparativo</button>
-  <button class="nav-tab" id="tab-ficha" data-view="ficha" style="display:none">▸ Ficha</button>
-</nav>
 
-<!-- PANEL -->
-<div class="view active" id="view-panel">
-  <div class="stat-row" style="margin-top:14px">
-    <div class="stile"><div class="stl">Riesgo crítico</div><div class="stv cc" id="cnt-c">—</div><div class="sts">operadores</div></div>
-    <div class="stile"><div class="stl">Seguimiento</div><div class="stv cs" id="cnt-s">—</div><div class="sts">operadores</div></div>
-    <div class="stile"><div class="stl">En observación</div><div class="stv cw" id="cnt-w">—</div><div class="sts">operadores</div></div>
-    <div class="stile"><div class="stl">Sin novedad</div><div class="stv cg" id="cnt-g">—</div><div class="sts">operadores</div></div>
-  </div>
-  <div class="filter-row">
-    <button class="fbtn active" data-f="all">Todos</button>
-    <button class="fbtn" data-f="Cooperativa">Cooperativas</button>
-    <button class="fbtn" data-f="SAVI">Sistemas SAVI</button>
-    <button class="fbtn" data-f="crit">🔴 Solo críticos</button>
-  </div>
-  <div class="sectitle">Mapa de calor — 8 indicadores (Res. AETN N° 298/2022)</div>
-  <div class="semwrap">
-    <div class="semscroll">
-      <table class="semtable">
-        <thead><tr>
-          <th>Operador</th>
-          <th title="Período de Cobro (días)">PMC</th>
-          <th title="Rotación de Activos">RotAct</th>
-          <th title="Endeudamiento">Endeu</th>
-          <th title="Prueba Ácida">P.Ác</th>
-          <th>ROA</th><th>ROE</th><th>ROI</th>
-          <th title="Margen Bruto">MBru</th>
-          <th>Semáforo</th><th>Rank</th>
-        </tr></thead>
-        <tbody id="sem-body"></tbody>
-      </table>
-    </div>
-    <div class="legrow">
-      <div class="legi"><div class="legd" style="background:var(--cf);border:1.5px solid var(--crit)"></div>Crítico</div>
-      <div class="legi"><div class="legd" style="background:var(--sf);border:1.5px solid var(--ser)"></div>Seguimiento reforzado</div>
-      <div class="legi"><div class="legd" style="background:var(--wf);border:1.5px solid var(--warn)"></div>En observación</div>
-      <div class="legi"><div class="legd" style="background:var(--gf);border:1.5px solid var(--good)"></div>Normal</div>
-      <div class="legi"><div class="legd" style="background:var(--nf);border:1.5px solid var(--bl)"></div>Sin dato</div>
-    </div>
-    <div class="legnote">Toca cualquier fila para abrir la ficha del operador. Valores DDO recalculados cuando disponibles; reportados en caso contrario.</div>
-  </div>
-</div>
-
-<!-- RANKING -->
-<div class="view" id="view-ranking">
-  <div style="margin-top:14px">
-    <div class="rintro"><strong>Metodología rank-sum.</strong> A cada operador se le asigna un rango de 1 (mejor) a N (peor) en cada uno de los 8 indicadores. Los rangos se suman: <strong>menor puntuación = mejor posición global</strong>. Método no paramétrico: no depende de las escalas ni unidades. Operadores sin dato en algún indicador reciben el peor rango disponible para ese indicador.</div>
-    <div class="sectitle">Posición global — gestión 2025</div>
-    <div class="rbwrap" id="rank-bars"></div>
-  </div>
-</div>
-
-<!-- COMPARATIVO -->
-<div class="view" id="view-comp">
-  <div style="margin-top:14px">
-    <select class="csel" id="comp-sel">
-      <option value="pmc">Período de Cobro (días) — parámetro ≤ 30 · menor es mejor</option>
-      <option value="rot">Rotación de Activos — mayor es mejor</option>
-      <option value="end">Endeudamiento — menor es mejor</option>
-      <option value="pac">Prueba Ácida — parámetro ≥ 1</option>
-      <option value="roa">ROA (%) — parámetro ≥ 5%</option>
-      <option value="roe">ROE (%) — parámetro ≥ 5%</option>
-      <option value="roi">ROI (%) — mayor es mejor</option>
-      <option value="mb">Margen Bruto (%) — mayor es mejor</option>
-    </select>
-    <div class="ccwrap">
-      <div class="sectitle" id="comp-titulo" style="margin-bottom:12px">—</div>
-      <div id="comp-bars"></div>
-      <div class="cax"><span>0</span><span id="comp-maxl">—</span></div>
-      <div class="cnote" id="comp-note"></div>
-    </div>
-  </div>
-</div>
-
-<!-- FICHA -->
-<div class="view" id="view-ficha">
-  <div style="margin-top:14px">
-    <button class="backbtn" id="back-btn">← Volver al panel</button>
-    <div class="fcard">
-      <div class="fhead">
-        <div class="fonm" id="f-nom">—</div>
-        <div class="fomt" id="f-meta">—</div>
-        <div class="fbadges">
-          <span class="fbdg" id="f-usr">—</span>
-          <span class="fbdg" id="f-rkbdg">—</span>
-          <span class="fbdg" id="f-estbdg">—</span>
-        </div>
-      </div>
-    </div>
-    <div class="fcard">
-      <div class="chead"><span class="ctitle">1. Derecho otorgado</span></div>
-      <div class="cbody"><div class="dgrid" id="f-der"></div></div>
-    </div>
-    <div class="fcard">
-      <div class="chead"><span class="ctitle">2. Historial COC — Obligaciones Contractuales (2022–2025)</span><span class="gb" id="f-cocbdg">—</span></div>
-      <div class="cbody" style="padding:0 8px 8px">
-        <table class="ctbl">
-          <thead><tr><th>Obligación</th><th>2022</th><th>2023</th><th>2024</th><th>2025</th></tr></thead>
-          <tbody id="f-coc"></tbody>
-        </table>
-      </div>
-    </div>
-    <div class="fcard">
-      <div class="chead"><span class="ctitle">3. Situación financiera — Gestión 2025</span><span class="gb" id="f-finbdg">—</span></div>
-      <div class="cbody">
-        <div class="ihdr"><span>Indicador</span><span>Reportado</span><span>DDO Recalc.</span><span></span></div>
-        <div id="f-inds"></div>
-        <div id="f-obs" style="font-size:10.5px;color:var(--tm);margin-top:10px;line-height:1.6"></div>
-      </div>
-    </div>
-    <div class="fcard">
-      <div class="chead"><span class="ctitle">4. Posición en el ranking global</span><span style="font-size:17px;font-weight:900" id="f-rkpos">—</span></div>
-      <div class="cbody">
-        <div style="font-size:12px;color:var(--ts);margin-bottom:12px" id="f-rkdesc">—</div>
-        <div class="rfgrid" id="f-rkgrid"></div>
-        <div style="font-size:11px;color:var(--tm);margin-top:12px;line-height:1.5" id="f-rknota">—</div>
-      </div>
-    </div>
-    <div class="fcard">
-      <div class="chead"><span class="ctitle">5. Sanciones registradas</span><span class="gb" id="f-sanbdg">—</span></div>
-      <div class="cbody" id="f-san"></div>
-    </div>
-    <div class="fcard">
-      <div class="chead"><span class="ctitle">6. Alertas y denuncias</span></div>
-      <div class="cbody" id="f-alt"></div>
-    </div>
-  </div>
-</div>
-
-<script>
-const OPS = [{"id":"OP-001","nombre":"CRE R.L. – SAVI Charagua","tipo":"Cooperativa","tipo_sistema":"SAVI","departamento":"Santa Cruz","municipio":"Charagua","actividad":"Distribución","resolucion":"AE N° 524/2014","estado_registro":"Vigente","rep_legal":"Félix Roger Robles Toledo","usuarios":4539.0,"demanda":1114.638748,"periodo_ucrt":"Julio 2026","pmc_r":70.93,"pmc_d":null,"rot_r":0.5928,"rot_d":null,"end_r":0.3059,"end_d":null,"pac_r":1.31,"pac_d":null,"roa_r":0.82,"roa_d":null,"roe_r":1.07,"roe_d":null,"roi_r":297.35,"roi_d":null,"mb_r":30.24,"mb_d":null,"estado_val":"Aclarado / subsanado","obs_fin":"NOTA AETN-4066-DDO-867/2026 DE28/08/2026_(GLOBAL)","coc25":7,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[],"alertas_reg":[]},{"id":"OP-002","nombre":"DELAPAZ – SAVI San Juan de Challana","tipo":"S.A.","tipo_sistema":"Electrificacion","departamento":"La Paz","municipio":"Cairoma","actividad":"Distribución","resolucion":"AETN N° 612/2025","estado_registro":"Vigente","rep_legal":"Miguel Ángel Nuñez Gaspar","usuarios":null,"demanda":null,"periodo_ucrt":"","pmc_r":57.33,"pmc_d":null,"rot_r":0.6511,"rot_d":null,"end_r":1.1194,"end_d":null,"pac_r":0.78,"pac_d":null,"roa_r":7.83,"roa_d":null,"roe_r":16.6,"roe_d":null,"roi_r":31.66,"roi_d":null,"mb_r":17.55,"mb_d":null,"estado_val":"Aclarado / subsanado","obs_fin":"NOTA AETN-3060-DDO-681/2026 DE 17/06/2026","coc25":5,"coc_hist":[[false,false,false,false],[false,false,false,false],[false,false,true,true],[false,false,true,true],[false,false,true,true],[false,false,true,true],[false,false,false,true]],"sanciones":[],"alertas_reg":[]},{"id":"OP-003","nombre":"COSEPAZ R.L.","tipo":"Cooperativa","tipo_sistema":"Electrificacion","departamento":"Oruro","municipio":"Poopó","actividad":"Distribución","resolucion":"AE N° 551/2012","estado_registro":"Vigente","rep_legal":"Jorge Hugo Hurtado Torrez","usuarios":590.0,"demanda":81.0,"periodo_ucrt":"Julio 2026","pmc_r":66.06,"pmc_d":71.85,"rot_r":0.2633,"rot_d":0.2788,"end_r":0.0438,"end_d":0.0438,"pac_r":13.64,"pac_d":13.64,"roa_r":0.52,"roa_d":0.52,"roe_r":0.55,"roe_d":0.55,"roi_r":-98.78,"roi_d":0.73,"mb_r":133.73,"mb_d":59.76,"estado_val":"Observado / requiere subsanación","obs_fin":"Observaciones en período de cobro y margen bruto; requiere aclaración y eventual recálculo.","coc25":6,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,false,false,false],[true,true,true,true],[false,true,true,true],[true,true,true,true]],"sanciones":[{"tipo":"Pecuniaria","monto":null,"motivo":"PROCESO SANCIONATORIO POR INCUMPLIMIENTO DE OBLIGACIONES CONTRACTUALES DEL CONTR","resolucion":"RESOLUCIÓN AETN N° 101/2024 de 15 de febrero de 2024","estado":"OBRADOS"},{"tipo":"Pecuniaria","monto":null,"motivo":"VERIFICACIÓN DEL CUMPLIMIENTO DE OBLIGACIONES CONTRACTUALES DEL CONTRATO DE ELEC","resolucion":"RESOLUCIÓN AETN N° 435/2023 de 25 de agosto de 2023","estado":"OBRADOS"},{"tipo":"Llamada de atención","monto":null,"motivo":"Proceso sancionatorio seguido contra COSEPAZ R.L. por la presunta comisión de la","resolucion":"RESOLUCIÓN AETN N° 317/2022 de 03 de junio de 2022","estado":"OBRADOS"},{"tipo":"Pecuniaria","monto":null,"motivo":"PROCESO INFRACTORIO CONTRA COSEPAZ R.L POR LA COMISIÓN DE LA SUPUESTA INFRACCIÓN","resolucion":"RESOLUCIÓN AETN N° 608/2021 de 18 de octubre de 2021","estado":"OBRADOS"}],"alertas_reg":[]},{"id":"OP-004","nombre":"SETAR – Sistema El Puente","tipo":"Empresa pública","tipo_sistema":"Electrificacion","departamento":"Tarija","municipio":"El Puente","actividad":"Distribución","resolucion":"AE N° 703/2015","estado_registro":"Vigente","rep_legal":"Miguel Ángel Arcienega Paniagua","usuarios":1519.0,"demanda":301.6731,"periodo_ucrt":"Julio 2026","pmc_r":1603.91,"pmc_d":null,"rot_r":0.1627,"rot_d":null,"end_r":-5.4665,"end_d":null,"pac_r":0.63,"pac_d":null,"roa_r":-0.08,"roa_d":null,"roe_r":0.36,"roe_d":null,"roi_r":-103.3,"roi_d":null,"mb_r":-0.49,"mb_d":null,"estado_val":"Observado / requiere subsanación","obs_fin":"Se tomón en cuenta el por sistema","coc25":7,"coc_hist":[[false,true,true,true],[true,true,true,true],[true,true,true,true],[true,false,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[{"tipo":"Llamada de atención","monto":null,"motivo":"PROCESO SANCIONATORIO POR INCUMPLIMIENTO DE OBLIGACIONES CONTRACTUALES DEL CONTR","resolucion":"RESOLUCIÓN AETN N° 65/2024 de 26 de enero de 2024","estado":"OBRADOS"}],"alertas_reg":[]},{"id":"OP-005","nombre":"COSEP R.L.","tipo":"Cooperativa","tipo_sistema":"Electrificacion","departamento":"Oruro","municipio":"Paria","actividad":"Distribución","resolucion":"AE N° 85/2011","estado_registro":"Vigente","rep_legal":"Roberto Colque Tarqui","usuarios":2223.0,"demanda":446.4,"periodo_ucrt":"Julio 2026","pmc_r":0.0,"pmc_d":0.0,"rot_r":1.775,"rot_d":1.7649,"end_r":0.866,"end_d":86.64,"pac_r":1.93,"pac_d":1.93,"roa_r":1.3,"roa_d":1.7,"roe_r":2.4,"roe_d":3.18,"roi_r":167.4,"roi_d":12.48,"mb_r":1.0,"mb_d":65.52,"estado_val":"Observado / requiere subsanación","obs_fin":"","coc25":7,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,false,true,true],[true,true,true,true],[false,false,true,true],[true,true,true,true]],"sanciones":[{"tipo":"Pecuniaria","monto":null,"motivo":"PROCESO SANCIONATORIO POR INCUMPLIMIENTO DE OBLIGACIONES CONTRACTUALES DEL CONTR","resolucion":"RESOLUCIÓN AETN N° 86/2024 de 06 de febrero de 2024","estado":"OBRADOS"},{"tipo":"Pecuniaria","monto":null,"motivo":"Investigación preliminar contra la Cooperativa de Servicios Públicos de Electrif","resolucion":"RESOLUCIÓN AETN N° 460/2023 de 04 de septiembre de 2023","estado":"OBRADOS"},{"tipo":"Pecuniaria","monto":null,"motivo":"Proceso de evaluación de la situación legal, administrrativa, financiera, técnic","resolucion":"RESOLUCIÓN AETN N° 418/2023 de 18 de agosto de 2023","estado":"OBRADOS"}],"alertas_reg":[]},{"id":"OP-006","nombre":"ELFEDECH S.A.","tipo":"S.A.","tipo_sistema":"Electrificacion","departamento":"Oruro","municipio":"Challapata","actividad":"Distribución","resolucion":"AE N° 797/2018","estado_registro":"Vigente","rep_legal":"Ronal Quispe Perez","usuarios":7893.0,"demanda":1525.2,"periodo_ucrt":"Julio 2026","pmc_r":76.23,"pmc_d":null,"rot_r":0.3173,"rot_d":null,"end_r":0.2257,"end_d":null,"pac_r":2.97,"pac_d":null,"roa_r":2.65,"roa_d":null,"roe_r":3.25,"roe_d":null,"roi_r":-7.29,"roi_d":null,"mb_r":53.04,"mb_d":null,"estado_val":"Presentado / pendiente de validación DDO","obs_fin":"Pendiente","coc25":7,"coc_hist":[[true,false,true,true],[true,true,true,true],[true,true,true,true],[true,false,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[{"tipo":"Llamada de atención","monto":null,"motivo":"VERIFICACIÓN DE CUMPLIMIENTO DE OBLIGACIONES CONTRACTUALES DEL CONTRATO DE REGIS","resolucion":"RESOLUCIÓN AETN N° 694/2023 de 08 de noviembre de 2023","estado":"OBRADOS"},{"tipo":"Llamada de atención","monto":null,"motivo":"PROCESO INFRACTORIO SEGUIDO CONTRA LA EMPRESA DE LUZ Y FUERZA ELÉCTRICA CHALLAPA","resolucion":"RESOLUCIÓN AETN N° 774/2022 de 06 de diciembre de 2022","estado":"OBRADOS"}],"alertas_reg":[]},{"id":"OP-007","nombre":"ENDE – SAVI El Sena","tipo":"Empresa pública","tipo_sistema":"SAVI","departamento":"Pando","municipio":"El Sena","actividad":"Distribución","resolucion":"AE N° 640/2013","estado_registro":"Vigente","rep_legal":"Mario Larrain Saavedra","usuarios":2298.0,"demanda":931.0,"periodo_ucrt":"Julio 2026","pmc_r":71.67,"pmc_d":null,"rot_r":0.0274,"rot_d":null,"end_r":1.0976,"end_d":null,"pac_r":1.32,"pac_d":null,"roa_r":5.52,"roa_d":null,"roe_r":11.57,"roe_d":null,"roi_r":166.21,"roi_d":null,"mb_r":72.05,"mb_d":null,"estado_val":"Observado / requiere subsanación","obs_fin":"NOTA AETN-3951-DDO-843/2026 DE 24/08/2026","coc25":7,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[{"tipo":"Llamada de atención","monto":null,"motivo":"PROCESO INFRACTORIO CONTRA ENDE SISTEMA EL SENA POR LA COMISIÓN DE LA SUPUESTA I","resolucion":"RESOLUCIÓN AETN N° 731/2021 de 09 de diciembre de 2021","estado":"RECURSO DE REVOCATORIA"}],"alertas_reg":[]},{"id":"OP-008","nombre":"ENDE Guaracachi S.A. – Central Solar El Sena","tipo":"S.A.","tipo_sistema":"Electrificacion","departamento":"Pando","municipio":"El Sena","actividad":"Generacion","resolucion":"AE N° 400/2019","estado_registro":"Vigente","rep_legal":"Pedro Miguel Huber Gomez","usuarios":null,"demanda":null,"periodo_ucrt":"","pmc_r":49.86,"pmc_d":null,"rot_r":0.3126,"rot_d":null,"end_r":0.1301,"end_d":null,"pac_r":2.57,"pac_d":null,"roa_r":0.54,"roa_d":null,"roe_r":0.61,"roe_d":null,"roi_r":null,"roi_d":null,"mb_r":45.84,"mb_d":null,"estado_val":"Aclarado / subsanado","obs_fin":"NOTA AETN-4035-DDO-861/2026 DE27/08/2026","coc25":6,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,false],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[{"tipo":"Llamada de atención","monto":null,"motivo":"PROCESO INFRACTORIO SEGUIDO CONTRA ENDE GUARACACHI S.A. SITEMA CENTRAL SOLAR EL ","resolucion":"RESOLUCIÓN AETN N° 802/2022 de 19 de diciembre de 2022","estado":"OBRADOS"}],"alertas_reg":[]},{"id":"OP-009","nombre":"ENDE Guaracachi S.A. – SAVI San Matías","tipo":"S.A.","tipo_sistema":"Electrificacion","departamento":"Santa Cruz","municipio":"San Matias","actividad":"Distribución","resolucion":"AE N° 417/2017","estado_registro":"Vigente","rep_legal":"Pedro Miguel Huber Gomez","usuarios":null,"demanda":null,"periodo_ucrt":"","pmc_r":49.86,"pmc_d":null,"rot_r":0.3126,"rot_d":null,"end_r":0.1301,"end_d":null,"pac_r":2.57,"pac_d":null,"roa_r":0.54,"roa_d":null,"roe_r":0.61,"roe_d":null,"roi_r":null,"roi_d":null,"mb_r":45.84,"mb_d":null,"estado_val":"Aclarado / subsanado","obs_fin":"NOTA AETN-4035-DDO-861/2026 DE27/08/2026","coc25":5,"coc_hist":[[false,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,false],[true,true,true,true],[true,true,true,true],[false,false,true,false]],"sanciones":[{"tipo":"Llamada de atención","monto":null,"motivo":"PROCESO INFRACTORIO CONTRA ENDE GUARACACHI SISTEMA SAN MATIAS POR LA COMISIÓN DE","resolucion":"RESOLUCIÓN AETN N° 566/2021 de 08 de octubre de 2021","estado":"RECURSO DE REVOCATORIA RECHAZADO"},{"tipo":"Llamada de atención","monto":null,"motivo":"PROCESO SANCIONATORIO POR INCUMPLIMIENTO DE OBLIGACIONES CONTRACTUALES DEL CONTR","resolucion":"RESOLUCIÓN AETN N° 241/2024 de 10 de abril de 2024","estado":"OBRADOS"}],"alertas_reg":[]},{"id":"OP-010","nombre":"ENDE DEL BENI S.A.M. – Sistema Reyes","tipo":"S.A.M.","tipo_sistema":"Electrificacion","departamento":"Beni","municipio":"Reyes","actividad":"Distribución","resolucion":"AE N° 654/2015","estado_registro":"Vigente","rep_legal":"Carlos Alberto Tapia Suarez","usuarios":2375.0,"demanda":863.0,"periodo_ucrt":"Julio 2026","pmc_r":175.13,"pmc_d":null,"rot_r":0.6135,"rot_d":null,"end_r":0.434,"end_d":null,"pac_r":1.6,"pac_d":null,"roa_r":9.66,"roa_d":null,"roe_r":13.85,"roe_d":null,"roi_r":129.37,"roi_d":null,"mb_r":17.34,"mb_d":null,"estado_val":"Observado / requiere subsanación","obs_fin":"NOTA AETN-2260-DDO-513/2026 DE 06/05/2026 (GLOBAL)","coc25":7,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,false,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[],"alertas_reg":[]},{"id":"OP-011","nombre":"ENDE DEL BENI S.A.M. – Sistema Rurrenabaque","tipo":"S.A.M.","tipo_sistema":"Electrificacion","departamento":"Beni","municipio":"Rurrenabaque","actividad":"Distribución","resolucion":"AE N° 653/2015","estado_registro":"Vigente","rep_legal":"Carlos Alberto Tapia Suarez","usuarios":5055.0,"demanda":1802.0,"periodo_ucrt":"Julio 2026","pmc_r":175.13,"pmc_d":null,"rot_r":0.6135,"rot_d":null,"end_r":0.434,"end_d":null,"pac_r":1.6,"pac_d":null,"roa_r":9.66,"roa_d":null,"roe_r":13.85,"roe_d":null,"roi_r":129.37,"roi_d":null,"mb_r":17.34,"mb_d":null,"estado_val":"Observado / requiere subsanación","obs_fin":"NOTA AETN-2260-DDO-513/2026 DE 06/05/2026 (GLOBAL)","coc25":7,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,false,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[],"alertas_reg":[]},{"id":"OP-012","nombre":"ENDE DEL BENI S.A.M. – Sistema San Borja","tipo":"S.A.M.","tipo_sistema":"Electrificacion","departamento":"Beni","municipio":"San Borja","actividad":"Distribución","resolucion":"AE N° 655/2015","estado_registro":"Vigente","rep_legal":"Carlos Alberto Tapia Suarez","usuarios":6578.0,"demanda":2593.0,"periodo_ucrt":"Julio 2026","pmc_r":175.13,"pmc_d":null,"rot_r":0.6135,"rot_d":null,"end_r":0.434,"end_d":null,"pac_r":1.6,"pac_d":null,"roa_r":9.66,"roa_d":null,"roe_r":13.85,"roe_d":null,"roi_r":129.37,"roi_d":null,"mb_r":17.34,"mb_d":null,"estado_val":"Observado / requiere subsanación","obs_fin":"NOTA AETN-2260-DDO-513/2026 DE 06/05/2026 (GLOBAL)","coc25":7,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,false,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[],"alertas_reg":[]},{"id":"OP-013","nombre":"ENDE DEL BENI S.A.M. – Sistema San Ignacio de Moxos","tipo":"S.A.M.","tipo_sistema":"Electrificacion","departamento":"Beni","municipio":"San Ignacio","actividad":"Distribución","resolucion":"AE N° 656/2015","estado_registro":"Vigente","rep_legal":"Carlos Alberto Tapia Suarez","usuarios":7479.0,"demanda":4060.0,"periodo_ucrt":"Julio 2026","pmc_r":175.13,"pmc_d":null,"rot_r":0.6135,"rot_d":null,"end_r":0.434,"end_d":null,"pac_r":1.6,"pac_d":null,"roa_r":9.66,"roa_d":null,"roe_r":13.85,"roe_d":null,"roi_r":129.37,"roi_d":null,"mb_r":17.34,"mb_d":null,"estado_val":"Observado / requiere subsanación","obs_fin":"NOTA AETN-2260-DDO-513/2026 DE 06/05/2026 (GLOBAL)","coc25":7,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,false,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[],"alertas_reg":[]},{"id":"OP-014","nombre":"ENDE DEL BENI S.A.M. – Sistema Yucumo","tipo":"S.A.M.","tipo_sistema":"Electrificacion","departamento":"Beni","municipio":"Yucumo","actividad":"Distribución","resolucion":"AE N° 652/2015","estado_registro":"Vigente","rep_legal":"Carlos Alberto Tapia Suarez","usuarios":4040.0,"demanda":928.0,"periodo_ucrt":"Julio 2026","pmc_r":175.13,"pmc_d":null,"rot_r":0.6135,"rot_d":null,"end_r":0.434,"end_d":null,"pac_r":1.6,"pac_d":null,"roa_r":9.66,"roa_d":null,"roe_r":13.85,"roe_d":null,"roi_r":129.37,"roi_d":null,"mb_r":17.34,"mb_d":null,"estado_val":"Observado / requiere subsanación","obs_fin":"NOTA AETN-2260-DDO-513/2026 DE 06/05/2026 (GLOBAL)","coc25":7,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,false,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[],"alertas_reg":[]},{"id":"OP-015","nombre":"ENDE DEL BENI S.A.M. – Sistema Santa Rosa","tipo":"S.A.M.","tipo_sistema":"Electrificacion","departamento":"Beni","municipio":"Santa Rosa","actividad":"Distribución","resolucion":"AE N° 659/2013","estado_registro":"Vigente","rep_legal":"Carlos Alberto Tapia Suarez","usuarios":2060.0,"demanda":735.0,"periodo_ucrt":"Julio 2026","pmc_r":175.13,"pmc_d":null,"rot_r":0.6135,"rot_d":null,"end_r":0.434,"end_d":null,"pac_r":1.6,"pac_d":null,"roa_r":9.66,"roa_d":null,"roe_r":13.85,"roe_d":null,"roi_r":129.37,"roi_d":null,"mb_r":17.34,"mb_d":null,"estado_val":"Observado / requiere subsanación","obs_fin":"NOTA AETN-2260-DDO-513/2026 DE 06/05/2026 (GLOBAL)","coc25":7,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,false,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[],"alertas_reg":[]},{"id":"OP-016","nombre":"Cooperativa 15 de Noviembre R.L.","tipo":"Cooperativa","tipo_sistema":"Electrificacion","departamento":"Oruro","municipio":"Caracollo","actividad":"Distribución","resolucion":"AE N° 281/2011","estado_registro":"Vigente","rep_legal":"Gabriel Candia Luna","usuarios":628.0,"demanda":167.0,"periodo_ucrt":"Julio 2026","pmc_r":75.8593,"pmc_d":268.29,"rot_r":0.48141,"rot_d":0.5113,"end_r":0.345193,"end_d":0.3773,"pac_r":2.13181,"pac_d":2.18,"roa_r":4.8728,"roa_d":4.25,"roe_r":7.1274,"roe_d":5.86,"roi_r":-28.3501,"roi_d":10.39,"mb_r":47.6455,"mb_d":69.86,"estado_val":"Observado / pendiente de validación","obs_fin":"La planilla del operador usa bases inconsistentes: activo total 2.155.094,72 vs EEFF 2.029.198,56; cuentas por cobrar comerciales omitidas. Indicadores reportados se conservan y quedan pendientes de recálculo/validación.","coc25":4,"coc_hist":[[false,false,false,true],[true,false,false,true],[true,false,false,true],[true,false,false,false],[true,true,true,true],[true,false,false,false],[true,false,false,false]],"sanciones":[{"tipo":"Pecuniaria","monto":null,"motivo":"Proceso Sancionatorio dentro del Proceso de evaluación de la situación legal, ad","resolucion":"RESOLUCIÓN AETN N° 339/2024 de 17 de junio de 2024","estado":"OBRADOS"},{"tipo":"Pecuniaria","monto":null,"motivo":"PROCESO SANCIONATORIO POR INCUMPLIMIENTO DE LAS OBLIGACIONES CONTRACTUALES DEL C","resolucion":"RESOLUCIÓN AETN N° 84/2024 de 06 de febrero de 2024","estado":"OBRADOS"},{"tipo":"Pecuniaria","monto":1868,"motivo":"PROCESO SANCIONATORIO POR INCUMPLIMIENTO DE LAS CLASULAS SEXTA (AREA DE OPERACIÓ","resolucion":"RESOLUCION AETN N° 454/2025 de 27 de junio de 2025","estado":"OBRADOS"},{"tipo":"Pecuniaria","monto":6481.17,"motivo":"PROCESO SANCIONATORIO POR INCUMPLIMIENTO DE LAS CLÁUSULAS SEXTA (AREA DE OPERACI","resolucion":"RESOLUCIÓN AETN N° 249/2026 DE 22 de abril de 2026","estado":"RECURSO DE REVOCATORIA RECHAZADO"}],"alertas_reg":[]},{"id":"OP-017","nombre":"CERVI R.L.","tipo":"Cooperativa","tipo_sistema":"Electrificacion","departamento":"Oruro","municipio":"Cercado","actividad":"Distribución","resolucion":"AE N° 565/2012","estado_registro":"Vigente","rep_legal":"Reynaldo Juaniquina Tarqui","usuarios":1152.0,"demanda":1620.0,"periodo_ucrt":"Julio 2026","pmc_r":57.62,"pmc_d":65.91,"rot_r":0.7057,"rot_d":0.7057,"end_r":0.0641,"end_d":0.0641,"pac_r":4.81,"pac_d":4.81,"roa_r":7.47,"roa_d":7.47,"roe_r":7.95,"roe_d":7.95,"roi_r":1002.0,"roi_d":6.9,"mb_r":15.52,"mb_d":32.44,"estado_val":"Aclarado / subsanado","obs_fin":"NOTA AETN-2463-DDO-602/2026 DE 15/03/2026","coc25":6,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,false],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[],"alertas_reg":[]},{"id":"OP-018","nombre":"COOPSEL R.L.","tipo":"Cooperativa","tipo_sistema":"Electrificacion","departamento":"Oruro","municipio":"Eucaliptus","actividad":"Distribución","resolucion":"AE N° 084/2011","estado_registro":"Vigente","rep_legal":"Roxana Calle Cabezas","usuarios":9634.0,"demanda":1490.4,"periodo_ucrt":"Julio 2026","pmc_r":134.03,"pmc_d":118.84,"rot_r":0.5644,"rot_d":0.5644,"end_r":0.3026,"end_d":0.3026,"pac_r":2.08,"pac_d":2.08,"roa_r":3.7,"roa_d":4.62,"roe_r":4.82,"roe_d":6.02,"roi_r":0.0,"roi_d":32.27,"mb_r":11.73,"mb_d":66.46,"estado_val":"Observado / requiere subsanación","obs_fin":"EEFF 2025 auditados con opinión sin salvedades según informe presentado. Indicadores registrados como reportados; pendientes de validación/recalculo DDO. La observación de 2024 por falta de dictamen/firma no se traslada automáticamente a 2025.","coc25":6,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,false,false,false],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[{"tipo":"Pecuniaria","monto":null,"motivo":"VERIFICACIÓN DEL CUMPLIMIENTO DE LAS OBLIGACIONES CONTRACTUALES DEL CONTRATO DE ","resolucion":"RESOLUCIÓN AETN N° 459/2023 de 04 de septiembre de 2023","estado":"RECURSO DE REVOCATORIA RECHAZADO"}],"alertas_reg":[]},{"id":"OP-019","nombre":"SERELCO S.R.L.","tipo":"S.R.L.","tipo_sistema":"Electrificacion","departamento":"La Paz","municipio":"Colquiri","actividad":"Distribución","resolucion":"AE N° 310/2020","estado_registro":"Vigente","rep_legal":"Lucio Poma Huanca","usuarios":2990.0,"demanda":729.0,"periodo_ucrt":"Julio 2026","pmc_r":241.31,"pmc_d":257.25,"rot_r":0.845,"rot_d":0.9008,"end_r":0.1978,"end_d":0.1978,"pac_r":8.16,"pac_d":8.16,"roa_r":13.43,"roa_d":13.43,"roe_r":16.08,"roe_d":16.08,"roi_r":1102.0,"roi_d":133.71,"mb_r":57.3,"mb_d":57.3,"estado_val":"Observado / requiere subsanación","obs_fin":"NOTA AETN-4506-DDO-933/2026 DE 21/09/2026","coc25":5,"coc_hist":[[true,true,true,true],[true,false,true,true],[true,true,true,true],[false,false,true,false],[false,true,true,false],[false,false,true,true],[true,true,true,true]],"sanciones":[{"tipo":"Pecuniaria","monto":null,"motivo":"PROCESO SANCIONATORIO POR EL INCUMPLIMIENTO DE LAS OBLIGACIONES CONTRACTUALES DE","resolucion":"RESOLUCIÓN AETN N° 151/2024 de 05 de marzo de 2024","estado":"OBRADOS"},{"tipo":"Llamada de atención","monto":null,"motivo":"VERIFICACIÓN DEL CUMPLIMIENTO DE LAS OBLIGACIONES CONTRACTUALES DEL CONTRATO DE ","resolucion":"Resolución AETN Nº 445/2025 de 18 de junio de 2025","estado":"JERARQUICO"},{"tipo":"Pecuniaria","monto":5618.83,"motivo":"PROCESO SANCIONATORIO POR INCUMPLIMIENTO DE LAS CLÁUSULAS DÉCIMA SEGUNDA (REGULA","resolucion":"Resolución AETN N° 235/2025 de 07 de abril de 2025","estado":"OBRADOS"}],"alertas_reg":[]},{"id":"OP-020","nombre":"COSERMO R.L.","tipo":"Cooperativa","tipo_sistema":"Electrificacion","departamento":"Chuquisaca","municipio":"Monteagudo","actividad":"Distribución","resolucion":"AE N° 302/2017","estado_registro":"Vigente","rep_legal":"Ernesto Chávez Rosado","usuarios":8822.0,"demanda":2199.0734,"periodo_ucrt":"Julio 2026","pmc_r":110.66,"pmc_d":119.53,"rot_r":0.6795,"rot_d":0.734,"end_r":0.2048,"end_d":0.2048,"pac_r":1.89,"pac_d":1.89,"roa_r":1.24,"roa_d":1.24,"roe_r":1.49,"roe_d":1.49,"roi_r":12.83,"roi_d":1.97,"mb_r":38.5,"mb_d":38.5,"estado_val":"Aclarado / subsanado","obs_fin":"Observaciones formuladas por DDO fueron aclaradas. Mantener antecedente; seguimiento ordinario. Cuenta por cobrar antigua a GAM Huacareta aprox. Bs 43.599,97 como observación puntual.","coc25":7,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"sanciones":[{"tipo":"Llamada de atención","monto":null,"motivo":"PROCESO SANCIONATORIO POR INCUMPLIMIENTO DE OBLIGACIONES CONTRACTUALES DEL CONTR","resolucion":"RESOLUCIÓN AETN N° 152/2024 de 05 de marzo de 2024","estado":"OBRADOS"},{"tipo":"Pecuniaria","monto":null,"motivo":"VERIFICACIÓN DE CUMPLIMIENTO DE OBLIGACIONES CONTRACTUALES DEL CONTRATO DE REGIS","resolucion":"RESOLUCIÓN AETN N° 434/2023 de 24 de agosto de 2023","estado":"OBRADOS"},{"tipo":"Llamada de atención","monto":null,"motivo":"PROCESO INFRACTORIO SEGUIDO CONTRA LA COOPERATIVA DE SERVICIOS PÚBLICOS DE ELECT","resolucion":"RESOLUCIÓN AETN N° 284/2022 de 10 de mayo de 2022","estado":"OBRADOS"}],"alertas_reg":[{"tipo":"Denuncia","descripcion":"Aspectos denunciados respecto al suministro trifásico, ampliaciones, interrupciones, lectura de medi","estado":"En análisis","actuacion":"Solicitud de Información a COSERMO"}]},{"id":"OP-021","nombre":"CEEK R.L. (KAMI)","tipo":"Cooperativa","tipo_sistema":"Electrificacion","departamento":"Cochabamba","municipio":"Ayopaya","actividad":"Distribución","resolucion":"AETN N° 603/2024","estado_registro":"Vigente","rep_legal":null,"usuarios":null,"demanda":null,"periodo_ucrt":"","pmc_r":null,"pmc_d":null,"rot_r":null,"rot_d":null,"end_r":null,"end_d":null,"pac_r":null,"pac_d":null,"roa_r":null,"roa_d":null,"roe_r":null,"roe_d":null,"roi_r":null,"roi_d":null,"mb_r":null,"mb_d":null,"estado_val":"Observado / requiere subsanación","obs_fin":"","coc25":2,"coc_hist":[[false,false,false,true],[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,true]],"sanciones":[],"alertas_reg":[]},{"id":"OP-022","nombre":"EM.P.S.E.U.","tipo":"Empresa pública municipal","tipo_sistema":"Electrificacion","departamento":"Potosi","municipio":"Uncia","actividad":"Distribución","resolucion":"AETN N° 482/2023","estado_registro":"Vigente","rep_legal":"Fernando Coca Arteaga","usuarios":6354.0,"demanda":1230.0,"periodo_ucrt":"Julio 2026","pmc_r":94.0,"pmc_d":93.93,"rot_r":1.51,"rot_d":1.5923,"end_r":1.29,"end_d":1.2935,"pac_r":1.36,"pac_d":1.36,"roa_r":11.6,"roa_d":15.17,"roe_r":26.7,"roe_d":26.68,"roi_r":-60.5,"roi_d":39.53,"mb_r":35.8,"mb_d":42.96,"estado_val":"Observado / requiere subsanación","obs_fin":"","coc25":7,"coc_hist":[[false,false,false,true],[false,false,false,true],[false,false,false,true],[false,false,false,true],[false,false,false,true],[false,false,false,true],[false,false,false,true]],"sanciones":[{"tipo":"Llamada de atención","monto":null,"motivo":"Proceso Sancionatorio por incumplimiento a la disposición séptima de la Resoluci","resolucion":"RESOLUCIÓN AETN N° 361/2024 de 28 de junio de 2024","estado":"OBRADOS"},{"tipo":"Pecuniaria","monto":null,"motivo":"Proceso infractorio seguido contra la Empresa Pública Municipal de Servicios Elé","resolucion":"RESOLUCIÓN AETN N° 278/2023 de 05 de junio de 2023","estado":"SE ACEPTA EL RECURSO DE REVOCATORIA"}],"alertas_reg":[]},{"id":"OP-023","nombre":"COSPES R.L.","tipo":"Cooperativa","tipo_sistema":"Electrificacion","departamento":"Potosi","municipio":"Chuquihuta","actividad":"Distribución","resolucion":"AETN N° 474/2021","estado_registro":"Vigente","rep_legal":"Joohnny Huanca Orihuela","usuarios":558.0,"demanda":651.36,"periodo_ucrt":"Julio 2026","pmc_r":42.84,"pmc_d":0.0,"rot_r":0.9244,"rot_d":0.9244,"end_r":-9.9129,"end_d":-9.9129,"pac_r":0.099,"pac_d":0.1,"roa_r":4.94,"roa_d":4.94,"roe_r":-44.0,"roe_d":-44.0,"roi_r":-46.07,"roi_d":53.93,"mb_r":3.33,"mb_d":41.4,"estado_val":"Observado / requiere subsanación","obs_fin":"Inconsistencias sustanciales en indicadores y presentación. EEFF: activo corriente Bs 1.793.791,75; pasivo corriente Bs 2.196.066,18; disponibilidades Bs 2.604,59; cuentas comerciales por pagar Bs 2.187.879,87; ingresos totales Bs 1.865.071,15. El patrimonio neto final se mantiene en Bs -221.536,16 por diferencia Activo-Pasivo. El Estado de Resultados reporta resultado Bs 97.467,28; el Balance muestra además una 'utilidad bruta del periodo' Bs 100.271,37, por lo que corresponde mantener la observación de consistencia documental. No constituye por sí solo determinación de insolvencia ni causal 15.j.","coc25":4,"coc_hist":[[true,true,true,true],[true,true,true,true],[false,false,true,true],[false,false,false,false],[false,true,false,false],[false,false,false,false],[true,true,true,true]],"sanciones":[{"tipo":"Pecuniaria","monto":null,"motivo":"PROCESO SANCIONATORIO POR INCUMPLIMIENTO DE OBLIGACIONES CONTRACTUALES DEL CONTR","resolucion":"RESOLUCIÓN AETN N° 85/2024 de 06 de febrero de 2024","estado":"OBRADOS"},{"tipo":"Pecuniaria","monto":3047.34,"motivo":"PROCESO SANCIONATORIO POR INCUMPLIMIENTO DE OBLIGACIONES CONTRACTUALES EN GARANT","resolucion":"Resolución AETN N° 433/2026 de 24 de julio de 2026","estado":"OBRADOS"},{"tipo":"Pecuniaria","monto":2427.95,"motivo":"PROCESO SANCIONATORIO POR INCUMPLIMIENTO DE LAS CLÁUSULAS DÉCIMA SEGUNDA (REGULA","resolucion":"RESOLUCIÓN AETN Nº 189/2025 DE 20 de marzo de 2025","estado":"OBRADOS"}],"alertas_reg":[]},{"id":"OP-024","nombre":"EMDECA S.A.","tipo":"S.A.","tipo_sistema":"Electrificacion","departamento":"Oruro","municipio":"Caracollo","actividad":"Distribución","resolucion":"AE N° 195/2017","estado_registro":"Vigente","rep_legal":"Florentino Padilla Catari","usuarios":3714.0,"demanda":509.52,"periodo_ucrt":"Julio 2026","pmc_r":null,"pmc_d":null,"rot_r":null,"rot_d":null,"end_r":null,"end_d":null,"pac_r":null,"pac_d":null,"roa_r":null,"roa_d":null,"roe_r":null,"roe_d":null,"roi_r":null,"roi_d":null,"mb_r":null,"mb_d":null,"estado_val":"Observado / requiere subsanación","obs_fin":"","coc25":6,"coc_hist":[[true,true,true,true],[true,true,true,true],[true,true,true,true],[true,true,true,false],[true,true,true,true],[false,true,true,true],[true,true,true,true]],"sanciones":[{"tipo":"Pecuniaria","monto":null,"motivo":"PROCESO SANCIONATORIO POR INCUMPLIMIENTO DE LAS OBLIGACIONES CONTRACTUALES DEL C","resolucion":"RESOLUCIÓN AETN N° 158/2024 de 06 de marzo de 2024","estado":"OBRADOS"},{"tipo":"Pecuniaria","monto":null,"motivo":"PROCESO INFRACTORIO SEGUIDO CONTRA LA EMPRESA DE DISTRIBUCIÓN DE ENERGÍA ELÉCTRI","resolucion":"RESOLUCIÓN AETN N° 316/2023 de 23 de junio de 2023","estado":"OBRADOS"},{"tipo":"Llamada de atención","monto":null,"motivo":"PROCESO INFRACTORIO SEGUIDO CONTRA LA EMPRES DE DISTRIBUCIÓN DE ENERGÍA ELÉCTRIC","resolucion":"RESOLUCIÓN AETN N° 139/2022 de 08 de marzo de 2022","estado":"OBRADOS"}],"alertas_reg":[]},{"id":"OP-025","nombre":"COOSPEL R.L.","tipo":"Cooperativa","tipo_sistema":null,"departamento":null,"municipio":null,"actividad":null,"resolucion":null,"estado_registro":"Vigente","rep_legal":null,"usuarios":null,"demanda":null,"periodo_ucrt":"","pmc_r":null,"pmc_d":null,"rot_r":null,"rot_d":null,"end_r":null,"end_d":null,"pac_r":null,"pac_d":null,"roa_r":null,"roa_d":null,"roe_r":null,"roe_d":null,"roi_r":null,"roi_d":null,"mb_r":null,"mb_d":null,"estado_val":"Sin información","obs_fin":"","coc25":0,"coc_hist":[[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]],"sanciones":[],"alertas_reg":[]}];
-const COC_OBLS = ["Área de Operación", "Obras e instalaciones", "Contabilidad, Auditoría y Balance", "Normas de Seguridad", "Medio Ambiente", "Seguros", "Actualización de Registro"];
-
-// ── CLASIFICACIÓN ──────────────────────────────────────
-function uv(op,k){ const d=op[k+'_d'],r=op[k+'_r']; return (d!==null&&d!==undefined)?d:r; }
-function efPMC(v){ if(v===null)return'n'; if(v===0)return'c'; if(v>180)return'c'; if(v>90)return's'; if(v>45)return'w'; return'g'; }
-function efROT(v){ if(v===null)return'n'; if(v<0.08)return's'; if(v<0.25)return'w'; return'g'; }
-function efEND(v){ if(v===null)return'n'; if(v<0||v>20)return'c'; if(v>1)return's'; if(v>0.7)return'w'; return'g'; }
-function efPAC(v){ if(v===null)return'n'; if(v<0.5)return'c'; if(v<1)return's'; if(v<1.5)return'w'; return'g'; }
-function efROA(v){ if(v===null)return'n'; if(v<0)return'c'; if(v<2)return's'; if(v<5)return'w'; return'g'; }
-function efROE(v){ if(v===null)return'n'; if(v<0)return'c'; if(v<2)return's'; if(v<5)return'w'; return'g'; }
-function efROI(v){ if(v===null)return'n'; if(v<0)return'c'; if(v<5)return's'; if(v<15)return'w'; return'g'; }
-function efMB(v){ if(v===null)return'n'; if(v<10)return's'; if(v<30)return'w'; return'g'; }
-const EFS = [op=>efPMC(uv(op,'pmc')),op=>efROT(uv(op,'rot')),op=>efEND(uv(op,'end')),op=>efPAC(uv(op,'pac')),op=>efROA(uv(op,'roa')),op=>efROE(uv(op,'roe')),op=>efROI(uv(op,'roi')),op=>efMB(uv(op,'mb'))];
-function gs(op){
-  const c=EFS.map(f=>f(op));
-  if(c.includes('c'))return'c';
-  if(c.filter(x=>x==='s').length>=2)return'c';
-  if(c.includes('s'))return's';
-  if(c.filter(x=>x==='w').length>=3)return's';
-  if(c.includes('w'))return'w';
-  return'g';
-}
-const SL={c:'🔴 Crítico',s:'🟠 Seguimiento',w:'🟡 Observación',g:'🟢 Normal',n:'⚫ Sin dato'};
-const GBC={c:'gb-c',s:'gb-s',w:'gb-w',g:'gb-g'};
-const CC={c:'chip-c',s:'chip-s',w:'chip-w',g:'chip-g',n:'chip-n'};
-const DC={c:'dot-c',s:'dot-s',w:'dot-w',g:'dot-g',n:'dot-n'};
-const FC={c:'var(--crit)',s:'var(--ser)',w:'var(--warn)',g:'var(--good)',n:'var(--neu)'};
-function fn(v,d=2){ if(v===null||v===undefined)return'—'; return Number(v).toFixed(d); }
-
-// ── RANK-SUM ────────────────────────────────────────────
-const KEYS=['pmc','rot','end','pac','roa','roe','roi','mb'];
-const HB={pmc:false,rot:true,end:false,pac:true,roa:true,roe:true,roi:true,mb:true};
-function computeRanks(){
-  const R={};
-  OPS.forEach(op=>{ R[op.id]={total:0,per:{}}; });
-  KEYS.forEach(k=>{
-    const vals=OPS.map(op=>{return{id:op.id,v:uv(op,k)}});
-    const valid=vals.filter(x=>x.v!==null&&x.v!==undefined&&!isNaN(x.v));
-    valid.sort((a,b)=>HB[k]?b.v-a.v:a.v-b.v);
-    valid.forEach((x,i)=>{ R[x.id].per[k]=i+1; R[x.id].total+=i+1; });
-    const nb=valid.length+1;
-    vals.filter(x=>!valid.find(y=>y.id===x.id)).forEach(x=>{ R[x.id].per[k]=nb; R[x.id].total+=nb; });
-  });
-  return R;
-}
-const RANKS=computeRanks();
-const SORTED=[...OPS].sort((a,b)=>RANKS[a.id].total-RANKS[b.id].total);
-const RKPOS={};
-SORTED.forEach((op,i)=>{ RKPOS[op.id]=i+1; });
-
-// ── STATS ────────────────────────────────────────────────
-function updateStats(ops){
-  const cnt={c:0,s:0,w:0,g:0};
-  ops.forEach(op=>cnt[gs(op)]++);
-  document.getElementById('cnt-c').textContent=cnt.c;
-  document.getElementById('cnt-s').textContent=cnt.s;
-  document.getElementById('cnt-w').textContent=cnt.w;
-  document.getElementById('cnt-g').textContent=cnt.g;
-}
-
-// ── SEMÁFORO ─────────────────────────────────────────────
-let curF='all';
-function buildSem(f){
-  let ops=OPS;
-  if(f==='crit')ops=OPS.filter(op=>gs(op)==='c');
-  else if(f&&f!=='all')ops=OPS.filter(op=>op.tipo===f||(f==='SAVI'&&op.tipo_sistema==='SAVI'));
-  updateStats(ops);
-  const tb=document.getElementById('sem-body');
-  tb.innerHTML='';
-  ops.forEach(op=>{
-    const g=gs(op);
-    const pos=RKPOS[op.id];
-    const dv=k=>uv(op,k);
-    const fPMC=v=>{ if(v===null)return'—'; if(v===0)return'⚠ 0d'; return Math.round(v)+'d'; };
-    const fROI=v=>v===null?'—':Math.round(v)+'%';
-    const fMB=v=>v===null?'—':fn(v,0)+'%';
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td><div class="opn">${op.nombre}</div><div class="opi">${op.id} · ${op.tipo}</div></td>
-      <td><span class="chip ${CC[efPMC(dv('pmc'))]}">${fPMC(dv('pmc'))}</span></td>
-      <td><span class="chip ${CC[efROT(dv('rot'))]}">${fn(dv('rot'),3)}</span></td>
-      <td><span class="chip ${CC[efEND(dv('end'))]}">${fn(dv('end'),3)}</span></td>
-      <td><span class="chip ${CC[efPAC(dv('pac'))]}">${fn(dv('pac'),2)}</span></td>
-      <td><span class="chip ${CC[efROA(dv('roa'))]}">${fn(dv('roa'),1)}%</span></td>
-      <td><span class="chip ${CC[efROE(dv('roe'))]}">${fn(dv('roe'),1)}%</span></td>
-      <td><span class="chip ${CC[efROI(dv('roi'))]}">${fROI(dv('roi'))}</span></td>
-      <td><span class="chip ${CC[efMB(dv('mb'))]}">${fMB(dv('mb'))}</span></td>
-      <td><span class="gb ${GBC[g]||''}">${SL[g]}</span></td>
-      <td><span class="rkn">${pos}°</span></td>
-    `;
-    tr.addEventListener('click',()=>openFicha(op));
-    tb.appendChild(tr);
-  });
-}
-document.querySelectorAll('.fbtn').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.fbtn').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active'); curF=b.dataset.f; buildSem(curF);
-}));
-
-// ── RANKING ──────────────────────────────────────────────
-function buildRanking(){
-  const wrap=document.getElementById('rank-bars');
-  wrap.innerHTML='';
-  const maxS=RANKS[SORTED[SORTED.length-1].id].total;
-  SORTED.forEach((op,i)=>{
-    const sc=RANKS[op.id].total;
-    const pct=(sc/maxS*100).toFixed(1);
-    const g=gs(op);
-    const row=document.createElement('div');
-    row.className='rbrow';
-    row.innerHTML=`<div class="rkp${i<3?' top3':''}">${i+1}</div><div class="rkc"><div class="rknm" title="${op.nombre}">${op.nombre}</div><div class="rkbt"><div class="rkbf" style="width:${pct}%;background:${FC[g]||FC.n}"></div></div></div><div class="rksc">${sc} pts</div>`;
-    row.addEventListener('click',()=>openFicha(op));
-    wrap.appendChild(row);
-  });
-}
-
-// ── COMPARATIVO ──────────────────────────────────────────
-const CCFG={
-  pmc:{lbl:'Período de Cobro (días)',fn:op=>uv(op,'pmc'),fmt:v=>v===0?'⚠ 0d':Math.round(v)+'d',note:'Parámetro regulatorio ≤ 30 días. Menor = mejor. PMC = 0 puede indicar dato incompleto.',hw:true,ef:efPMC},
-  rot:{lbl:'Rotación de Activos',fn:op=>uv(op,'rot'),fmt:v=>v.toFixed(3),note:'Mayor rotación = mayor eficiencia en uso de activos.',hw:false,ef:efROT},
-  end:{lbl:'Endeudamiento',fn:op=>uv(op,'end'),fmt:v=>v.toFixed(3),note:'Menor endeudamiento = mayor solidez patrimonial. Negativo = patrimonio negativo (insolvencia técnica).',hw:true,ef:efEND},
-  pac:{lbl:'Prueba Ácida',fn:op=>uv(op,'pac'),fmt:v=>v.toFixed(2),note:'Parámetro regulatorio ≥ 1. Por debajo → riesgo de liquidez inmediata.',hw:false,ef:efPAC},
-  roa:{lbl:'ROA (%)',fn:op=>uv(op,'roa'),fmt:v=>v.toFixed(1)+'%',note:'Parámetro regulatorio ≥ 5%. Rentabilidad sobre activos totales.',hw:false,ef:efROA},
-  roe:{lbl:'ROE (%)',fn:op=>uv(op,'roe'),fmt:v=>v.toFixed(1)+'%',note:'Parámetro regulatorio ≥ 5%. Rentabilidad sobre patrimonio neto.',hw:false,ef:efROE},
-  roi:{lbl:'ROI (%)',fn:op=>uv(op,'roi'),fmt:v=>v.toFixed(1)+'%',note:'Retorno sobre inversión. Negativo indica destrucción de valor.',hw:false,ef:efROI},
-  mb:{lbl:'Margen Bruto (%)',fn:op=>uv(op,'mb'),fmt:v=>v.toFixed(1)+'%',note:'Eficiencia en costos directos. Mayor margen = menor presión sobre resultado neto.',hw:false,ef:efMB},
-};
-function buildComp(key){
-  const cfg=CCFG[key];
-  document.getElementById('comp-titulo').textContent=cfg.lbl;
-  document.getElementById('comp-note').textContent=cfg.note;
-  const vals=OPS.map(op=>{return{op,v:cfg.fn(op)}}).filter(x=>x.v!==null&&x.v!==undefined&&!isNaN(x.v));
-  vals.sort((a,b)=>cfg.hw?b.v-a.v:a.v-b.v);
-  const absMax=Math.max(...vals.map(x=>Math.abs(x.v)),0.001);
-  document.getElementById('comp-maxl').textContent=cfg.fmt(cfg.hw?vals[0].v:absMax);
-  const wrap=document.getElementById('comp-bars'); wrap.innerHTML='';
-  vals.forEach(({op,v})=>{
-    const cl=cfg.ef(v);
-    const pct=(Math.abs(v)/absMax*100).toFixed(1);
-    const nm=op.nombre.length>15?op.nombre.substring(0,14)+'…':op.nombre;
-    const row=document.createElement('div'); row.className='cbar';
-    row.innerHTML=`<div class="cbl" title="${op.nombre}">${nm}</div><div class="cbt"><div class="cbf" style="width:${pct}%;background:${FC[cl]||FC.n}"></div></div><div class="cbv">${cfg.fmt(v)}</div>`;
-    row.addEventListener('click',()=>openFicha(op)); wrap.appendChild(row);
-  });
-}
-document.getElementById('comp-sel').addEventListener('change',e=>buildComp(e.target.value));
-
-// ── FICHA ────────────────────────────────────────────────
-function openFicha(op){
-  const g=gs(op), pos=RKPOS[op.id];
-  document.getElementById('f-nom').textContent=op.nombre;
-  document.getElementById('f-meta').textContent=`${op.id} · ${op.tipo} · ${op.departamento||''}${op.municipio?', '+op.municipio:''}`;
-  document.getElementById('f-usr').textContent=op.usuarios?`${Math.round(op.usuarios).toLocaleString()} consumidores`:'Consumidores: sin dato';
-  document.getElementById('f-rkbdg').textContent=`Ranking: ${pos}° / ${OPS.length}`;
-  const eb=document.getElementById('f-estbdg');
-  eb.textContent=SL[g];
-  eb.style.background=g==='g'?'rgba(12,163,12,.25)':g==='w'?'rgba(201,133,0,.3)':g==='s'?'rgba(184,90,42,.3)':'rgba(208,59,59,.35)';
-
-  // Derecho
-  document.getElementById('f-der').innerHTML=`
-    <div><div class="dl">ID técnico</div><div class="dv">${op.id}</div></div>
-    <div><div class="dl">Tipo de operador</div><div class="dv">${op.tipo}</div></div>
-    <div><div class="dl">Actividad</div><div class="dv">${op.actividad||'—'}</div></div>
-    <div><div class="dl">Resolución</div><div class="dv">${op.resolucion||'—'}</div></div>
-    <div><div class="dl">Representante legal</div><div class="dv">${op.rep_legal||'—'}</div></div>
-    <div><div class="dl">Consumidores (UCRT ${op.periodo_ucrt||''})</div><div class="dv">${op.usuarios?Math.round(op.usuarios).toLocaleString():'Sin dato'}</div></div>
-    <div><div class="dl">Demanda máxima (kW)</div><div class="dv">${op.demanda?op.demanda.toFixed(1):'Sin dato'}</div></div>
-    <div><div class="dl">Estado del registro</div><div class="dv">${op.estado_registro}</div></div>
-  `;
-
-  // COC
-  const c25=op.coc25;
-  const cb=document.getElementById('f-cocbdg');
-  cb.textContent=`${c25}/7 cumple en 2025`;
-  cb.className='gb '+(c25>=6?'gb-g':c25>=4?'gb-w':'gb-c');
-  const ctb=document.getElementById('f-coc'); ctb.innerHTML='';
-  COC_OBLS.forEach((obl,i)=>{
-    const yr=op.coc_hist[i]||[false,false,false,false];
-    ctb.innerHTML+=`<tr><td>${obl}</td>${yr.map(v=>v?`<td class="cc2">✓</td>`:`<td class="cx2">✗</td>`).join('')}</tr>`;
-  });
-
-  // Indicadores
-  const IND=[
-    {k:'pmc',lbl:'Período de Cobro (días)',fr:(r,d)=>[r===0?'⚠ 0d':(r===null?'—':Math.round(r)+'d'),d===null?'—':(d===0?'⚠ 0d':Math.round(d)+'d')],ef:efPMC},
-    {k:'rot',lbl:'Rotación de Activos',fr:(r,d)=>[fn(r,3),d===null?'—':fn(d,3)],ef:efROT},
-    {k:'end',lbl:'Endeudamiento',fr:(r,d)=>[fn(r,3),d===null?'—':fn(d,3)],ef:efEND},
-    {k:'pac',lbl:'Prueba Ácida',fr:(r,d)=>[fn(r,2),d===null?'—':fn(d,2)],ef:efPAC},
-    {k:'roa',lbl:'ROA (%)',fr:(r,d)=>[fn(r,2)+'%',d===null?'—':fn(d,2)+'%'],ef:efROA},
-    {k:'roe',lbl:'ROE (%)',fr:(r,d)=>[fn(r,2)+'%',d===null?'—':fn(d,2)+'%'],ef:efROE},
-    {k:'roi',lbl:'ROI (%)',fr:(r,d)=>[fn(r,1)+'%',d===null?'—':fn(d,1)+'%'],ef:efROI},
-    {k:'mb',lbl:'Margen Bruto (%)',fr:(r,d)=>[fn(r,1)+'%',d===null?'—':fn(d,1)+'%'],ef:efMB},
-  ];
-  const fb=document.getElementById('f-finbdg');
-  fb.textContent=op.estado_val;
-  fb.className='gb '+(op.estado_val.includes('subsanado')?'gb-g':op.estado_val.includes('requiere')?'gb-c':op.estado_val.includes('Pendiente')||op.estado_val.includes('pendiente')?'gb-w':'gb-w');
-  const ir=document.getElementById('f-inds'); ir.innerHTML='';
-  IND.forEach(def=>{
-    const r=op[def.k+'_r'],d=op[def.k+'_d'];
-    const deff=uv(op,def.k);
-    const [fr,fd]=def.fr(r,d);
-    const cl=def.ef(deff);
-    const changed=d!==null&&d!==undefined&&r!==null&&Math.abs(d-r)>0.001;
-    ir.innerHTML+=`<div class="irow"><div class="inm">${def.lbl}</div><div class="ivl" style="color:var(--tm)">${fr}</div><div class="ivl${changed?' c'+cl:''}">${fd}</div><div class="idot ${DC[cl]}"></div></div>`;
-  });
-  const obsEl=document.getElementById('f-obs');
-  obsEl.textContent=op.obs_fin||'';
-
-  // Ranking ficha
-  const rp=document.getElementById('f-rkpos');
-  rp.textContent=`${pos}° / ${OPS.length}`;
-  rp.className=pos<=5?'cg':pos<=15?'cw':'cc';
-  document.getElementById('f-rkdesc').innerHTML=`Puntuación acumulada: <strong>${RANKS[op.id].total} pts</strong> · Percentil de riesgo: ${Math.round((pos-1)/(OPS.length-1)*100)}°`;
-  const INMS={pmc:'PMC',rot:'RotAct',end:'Endeu',pac:'P.Ác',roa:'ROA',roe:'ROE',roi:'ROI',mb:'MBru'};
-  const rg=document.getElementById('f-rkgrid'); rg.innerHTML='';
-  KEYS.forEach(k=>{
-    const p=RANKS[op.id].per[k];
-    const cl=p<=3?'rp-g':p>=OPS.length-3?'rp-b':'rp-w';
-    rg.innerHTML+=`<div class="rfi"><div class="rfl">${INMS[k]}</div><div class="rfp ${cl}">${p}°</div><div class="rfs">de ${OPS.length}</div></div>`;
-  });
-  const best=KEYS.reduce((a,b)=>RANKS[op.id].per[a]<RANKS[op.id].per[b]?a:b);
-  const worst=KEYS.reduce((a,b)=>RANKS[op.id].per[a]>RANKS[op.id].per[b]?a:b);
-  document.getElementById('f-rknota').textContent=`Mejor posición individual: ${INMS[best]} (${RANKS[op.id].per[best]}°). Peor posición: ${INMS[worst]} (${RANKS[op.id].per[worst]}°).`;
-
-  // Sanciones
-  const sans=op.sanciones||[];
-  const sb=document.getElementById('f-sanbdg');
-  sb.textContent=`${sans.length} sanción${sans.length!==1?'es':''}`;
-  sb.className='gb '+(sans.length===0?'gb-g':sans.length<=2?'gb-w':'gb-c');
-  const sw=document.getElementById('f-san'); sw.innerHTML='';
-  if(!sans.length){ sw.innerHTML='<div class="nosanc">✓ Sin sanciones registradas</div>'; }
-  else{ sans.forEach(s=>{
-    const col=s.tipo==='Pecuniaria'?'var(--crit)':'var(--ser)';
-    sw.innerHTML+=`<div class="alti"><div class="altd" style="background:${col}"></div><div><div class="altt">${s.tipo}${s.monto?' · Bs '+Number(s.monto).toLocaleString('es-BO',{minimumFractionDigits:2}):''} — ${s.motivo}</div><div class="altm">${s.resolucion||''} ${s.estado?'· '+s.estado:''}</div></div></div>`;
-  })); }
-
-  // Alertas
-  const alts=op.alertas_reg||[];
-  const aw=document.getElementById('f-alt'); aw.innerHTML='';
-  if(!alts.length){ aw.innerHTML='<div class="nosanc">✓ Sin alertas registradas</div>'; }
-  else{ alts.forEach(a=>{ aw.innerHTML+=`<div class="alti"><div class="altd" style="background:var(--warn)"></div><div><div class="altt">${a.tipo}: ${a.descripcion}</div><div class="altm">Estado: ${a.estado} · ${a.actuacion||''}</div></div></div>`; }); }
-
-  document.getElementById('tab-ficha').style.display='block';
-  setView('ficha');
-}
-
-document.getElementById('back-btn').addEventListener('click',()=>{
-  setView('panel');
-  document.getElementById('tab-ficha').style.display='none';
-});
-
-function setView(name){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('view-'+name).classList.add('active');
-  document.querySelector(`[data-view="${name}"]`).classList.add('active');
-  window.scrollTo(0,0);
-}
-document.querySelectorAll('.nav-tab').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
-
-buildSem('all');
-buildRanking();
-buildComp('pmc');
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
-</script>
-</body>
-</html>
+AETN · DDO · Dirección de Derechos y Obligaciones
+Control de Riesgo — Operadores con Registro
+Gestión 2025 · Resolución AETN N° 298/2022 · Datos al corte oct 2026
+25operadores
+Panel de Riesgo
+Ranking Global
+Comparativo
+Riesgo crítico
+14
+operadores
+Seguimiento
+7
+operadores
+En observación
+1
+operadores
+Sin novedad
+3
+operadores
+Todos
+Cooperativas
+Sistemas SAVI
+🔴 Solo críticos
+Mapa de calor — 8 indicadores (Res. AETN N° 298/2022)
+Operador 	PMC 	RotAct 	Endeu 	P.Ác 	ROA	ROE	ROI 	MBru 	Semáforo	Rank
+CRE R.L. – SAVI Charagua
+OP-001 · Cooperativa
+	71d 	0.593 	0.306 	1.31 	0.8% 	1.1% 	297% 	30% 	🔴 Crítico 	18°
+DELAPAZ – SAVI San Juan de Challana
+OP-002 · S.A.
+	57d 	0.651 	1.119 	0.78 	7.8% 	16.6% 	32% 	18% 	🔴 Crítico 	10°
+COSEPAZ R.L.
+OP-003 · Cooperativa
+	72d 	0.279 	0.044 	13.64 	0.5% 	0.6% 	1% 	60% 	🔴 Crítico 	13°
+SETAR – Sistema El Puente
+OP-004 · Empresa pública
+	1604d 	0.163 	-5.466 	0.63 	-0.1% 	0.4% 	-103% 	-0% 	🔴 Crítico 	22°
+COSEP R.L.
+OP-005 · Cooperativa
+	⚠ 0d 	1.765 	86.640 	1.93 	1.7% 	3.2% 	12% 	66% 	🔴 Crítico 	6°
+ELFEDECH S.A.
+OP-006 · S.A.
+	76d 	0.317 	0.226 	2.97 	2.6% 	3.3% 	-7% 	53% 	🔴 Crítico 	12°
+ENDE – SAVI El Sena
+OP-007 · Empresa pública
+	72d 	0.027 	1.098 	1.32 	5.5% 	11.6% 	166% 	72% 	🔴 Crítico 	11°
+ENDE Guaracachi S.A. – Central Solar El Sena
+OP-008 · S.A.
+	50d 	0.313 	0.130 	2.57 	0.5% 	0.6% 	— 	46% 	🔴 Crítico 	14°
+ENDE Guaracachi S.A. – SAVI San Matías
+OP-009 · S.A.
+	50d 	0.313 	0.130 	2.57 	0.5% 	0.6% 	— 	46% 	🔴 Crítico 	19°
+ENDE DEL BENI S.A.M. – Sistema Reyes
+OP-010 · S.A.M.
+	175d 	0.614 	0.434 	1.60 	9.7% 	13.8% 	129% 	17% 	🟠 Seguimiento 	3°
+ENDE DEL BENI S.A.M. – Sistema Rurrenabaque
+OP-011 · S.A.M.
+	175d 	0.614 	0.434 	1.60 	9.7% 	13.8% 	129% 	17% 	🟠 Seguimiento 	5°
+ENDE DEL BENI S.A.M. – Sistema San Borja
+OP-012 · S.A.M.
+	175d 	0.614 	0.434 	1.60 	9.7% 	13.8% 	129% 	17% 	🟠 Seguimiento 	9°
+ENDE DEL BENI S.A.M. – Sistema San Ignacio de Moxos
+OP-013 · S.A.M.
+	175d 	0.614 	0.434 	1.60 	9.7% 	13.8% 	129% 	17% 	🟠 Seguimiento 	15°
+ENDE DEL BENI S.A.M. – Sistema Yucumo
+OP-014 · S.A.M.
+	175d 	0.614 	0.434 	1.60 	9.7% 	13.8% 	129% 	17% 	🟠 Seguimiento 	20°
+ENDE DEL BENI S.A.M. – Sistema Santa Rosa
+OP-015 · S.A.M.
+	175d 	0.614 	0.434 	1.60 	9.7% 	13.8% 	129% 	17% 	🟠 Seguimiento 	21°
+Cooperativa 15 de Noviembre R.L.
+OP-016 · Cooperativa
+	268d 	0.511 	0.377 	2.18 	4.3% 	5.9% 	10% 	70% 	🔴 Crítico 	17°
+CERVI R.L.
+OP-017 · Cooperativa
+	66d 	0.706 	0.064 	4.81 	7.5% 	8.0% 	7% 	32% 	🟡 Observación 	2°
+COOPSEL R.L.
+OP-018 · Cooperativa
+	119d 	0.564 	0.303 	2.08 	4.6% 	6.0% 	32% 	66% 	🟠 Seguimiento 	8°
+SERELCO S.R.L.
+OP-019 · S.R.L.
+	257d 	0.901 	0.198 	8.16 	13.4% 	16.1% 	134% 	57% 	🔴 Crítico 	1°
+COSERMO R.L.
+OP-020 · Cooperativa
+	120d 	0.734 	0.205 	1.89 	1.2% 	1.5% 	2% 	39% 	🔴 Crítico 	16°
+CEEK R.L. (KAMI)
+OP-021 · Cooperativa
+	— 	— 	— 	— 	—% 	—% 	— 	— 	🟢 Normal 	23°
+EM.P.S.E.U.
+OP-022 · Empresa pública municipal
+	94d 	1.592 	1.294 	1.36 	15.2% 	26.7% 	40% 	43% 	🔴 Crítico 	4°
+COSPES R.L.
+OP-023 · Cooperativa
+	⚠ 0d 	0.924 	-9.913 	0.10 	4.9% 	-44.0% 	54% 	41% 	🔴 Crítico 	7°
+EMDECA S.A.
+OP-024 · S.A.
+	— 	— 	— 	— 	—% 	—% 	— 	— 	🟢 Normal 	24°
+COOSPEL R.L.
+OP-025 · Cooperativa
+	— 	— 	— 	— 	—% 	—% 	— 	— 	🟢 Normal 	25°
+Crítico
+Seguimiento reforzado
+En observación
+Normal
+Sin dato
+Toca cualquier fila para abrir la ficha del operador. Valores DDO recalculados cuando disponibles; reportados en caso contrario.
